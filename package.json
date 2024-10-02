@@ -1,0 +1,27 @@
+{
+  "name": "express-biztime",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myronchen-git/Springboard-SEC-Unit-33.1-Node-PG-Exercise.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/myronchen-git/Springboard-SEC-Unit-33.1-Node-PG-Exercise/issues"
+  },
+  "homepage": "https://github.com/myronchen-git/Springboard-SEC-Unit-33.1-Node-PG-Exercise#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
