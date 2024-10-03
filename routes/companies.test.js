@@ -10,8 +10,8 @@ const db = require('../db');
 // ==================================================
 
 const company1Data = Object.freeze({
-  code: 'co1',
-  name: 'company1',
+  code: 'company-1-incorp',
+  name: 'company 1 Incorp.',
   description: 'abc',
 });
 
@@ -103,8 +103,14 @@ describe('POST /companies', () => {
   const url = '/companies';
 
   test('Creates a new company.', async () => {
+    // Arrange
+    const data = {
+      name: company1Data.name,
+      description: company1Data.description,
+    };
+
     // Act
-    const resp = await request(app).post(url).send(company1Data);
+    const resp = await request(app).post(url).send(data);
 
     // Assert
     expect(resp.statusCode).toBe(201);

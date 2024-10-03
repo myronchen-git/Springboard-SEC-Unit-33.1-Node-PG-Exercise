@@ -19,7 +19,8 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
     "jest": "^29.7.0",
