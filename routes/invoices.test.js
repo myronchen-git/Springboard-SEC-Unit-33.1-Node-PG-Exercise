@@ -148,9 +148,57 @@ describe('PUT /invoices/[id]', () => {
     url = `/invoices/${invoice1.id}`;
   });
 
-  test('Updates an existing invoice.', async () => {
+  test('Updates an existing invoice without paid argument.', async () => {
     // Arrange
     const updatedData = Object.freeze({ amt: 99 });
+    const expectedRawData = { ...invoice1, ...updatedData };
+    const expectedJsonData = { ...expectedRawData };
+    expectedJsonData.add_date = expectedJsonData.add_date.toJSON();
+
+    // Act
+    const resp = await request(app).put(url).send(updatedData);
+
+    // Assert
+    expect(resp.statusCode).toBe(200);
+    expect(resp.body).toEqual({ invoice: expectedJsonData });
+
+    const invoicesResults = await db.query(`SELECT * FROM invoices;`);
+    expect(invoicesResults.rows.length).toBe(1);
+    expect(invoicesResults.rows[0]).toEqual(expectedRawData);
+  });
+
+  test('Updates an existing invoice with paid.', async () => {
+    // Arrange
+    const updatedData = Object.freeze({ amt: 99, paid: true });
+
+    const expectedRawData = { ...invoice1, ...updatedData };
+    expectedRawData.paid_date = expect.any(Date);
+
+    const expectedJsonData = { ...expectedRawData };
+    expectedJsonData.add_date = expectedJsonData.add_date.toJSON();
+    expectedJsonData.paid_date = expect.any(String);
+
+    // Act
+    const resp = await request(app).put(url).send(updatedData);
+
+    // Assert
+    expect(resp.statusCode).toBe(200);
+    expect(resp.body).toEqual({ invoice: expectedJsonData });
+
+    const invoicesResults = await db.query(`SELECT * FROM invoices;`);
+    expect(invoicesResults.rows.length).toBe(1);
+    expect(invoicesResults.rows[0]).toEqual(expectedRawData);
+  });
+
+  test('Updates an existing invoice with unpaid.', async () => {
+    // Arrange
+    await db.query(
+      `UPDATE invoices
+      SET paid = true, paid_date = $1`,
+      [new Date()]
+    );
+
+    const updatedData = Object.freeze({ amt: 99, paid: false });
     const expectedRawData = { ...invoice1, ...updatedData };
     const expectedJsonData = { ...expectedRawData };
     expectedJsonData.add_date = expectedJsonData.add_date.toJSON();
