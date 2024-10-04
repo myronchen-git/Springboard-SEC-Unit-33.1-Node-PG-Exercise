@@ -23,7 +23,12 @@ const invoice1Data = Object.freeze({
 let company1;
 
 beforeEach(async () => {
-  await db.query('TRUNCATE TABLE invoices; DELETE FROM companies;');
+  await db.query(
+    `TRUNCATE TABLE companies_industries;
+    TRUNCATE TABLE invoices;
+    DELETE FROM companies;
+    DELETE FROM industries;`
+  );
 
   const results = await db.query(
     `INSERT INTO companies (code, name, description)

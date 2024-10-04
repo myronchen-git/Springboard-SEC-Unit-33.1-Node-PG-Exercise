@@ -28,12 +28,22 @@ router.get('/:code', async (req, res, next) => {
     const code = req.params.code;
 
     const companyResults = await db.query(
-      'SELECT code, name, description FROM companies WHERE code = $1;',
+      `SELECT c.code, c.name, c.description, i.industry
+      FROM companies AS c
+      LEFT JOIN companies_industries AS ci ON c.code = ci.comp_code
+      LEFT JOIN industries AS i ON ci.industry_code = i.code
+      WHERE c.code = $1;`,
       [code]
     );
 
     if (companyResults.rows.length === 0) {
       return next(new ExpressError('Company not found.', 404));
+    }
+
+    const { name, description } = companyResults.rows[0];
+    let industries = companyResults.rows.map((row) => row.industry);
+    if (industries[0] === null) {
+      industries = [];
     }
 
     const invoiceResults = await db.query(
@@ -44,7 +54,7 @@ router.get('/:code', async (req, res, next) => {
     const invoices = invoiceResults.rows.map((invoice) => invoice.id);
 
     return res.json({
-      company: { ...companyResults.rows[0], invoices },
+      company: { code, name, description, industries, invoices },
     });
   } catch (err) {
     next(new ExpressError('Error when querying database.', 500));
@@ -67,7 +77,33 @@ router.post('', async (req, res, next) => {
 
     return res.status(201).json({ company: results.rows[0] });
   } catch (err) {
-    next('Error when inserting into database.', 500);
+    next(new ExpressError('Error when inserting into database.', 500));
+  }
+});
+
+// POST /companies/[code]/industries
+router.post('/:code/industries', async (req, res, next) => {
+  try {
+    const code = req.params.code;
+    const { industry_code } = req.body;
+
+    const results = await db.query(
+      `INSERT INTO companies_industries (comp_code, industry_code)
+      VALUES ($1, $2)
+      RETURNING comp_code, industry_code;`,
+      [code, industry_code]
+    );
+
+    return res.status(201).json({
+      company: { code: results.rows[0].comp_code },
+      industry: { code: results.rows[0].industry_code },
+    });
+  } catch (err) {
+    if (err.code === '23503') {
+      next(new ExpressError('Company or industry code does not exist.', 404));
+    } else {
+      next(new ExpressError('Error when inserting into database.', 500));
+    }
   }
 });
 
